@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Survey</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .step { display: none; }
+    .step.active { display: block; }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-gray-100">
+  <div class="w-full max-w-lg p-8 bg-white shadow-lg rounded-2xl">
+
+    <!-- Progress bar -->
+    <div class="w-full bg-gray-200 rounded-full h-2 mb-6">
+      <div id="progress" class="bg-blue-500 h-2 rounded-full transition-all duration-500" style="width: 33%;"></div>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="step active" id="step1">
+      <h2 class="text-xl font-bold mb-4">What is your income range?</h2>
+      <div class="grid gap-3">
+        <button class="option p-4 border rounded-lg hover:bg-blue-50" data-step="income" data-value="<20k">< $20,000</button>
+        <button class="option p-4 border rounded-lg hover:bg-blue-50" data-step="income" data-value="20-40">$20,000 - $40,000</button>
+        <button class="option p-4 border rounded-lg hover:bg-blue-50" data-step="income" data-value="40-80">$40,000 - $80,000</button>
+        <button class="option p-4 border rounded-lg hover:bg-blue-50" data-step="income" data-value="80+">> $80,000</button>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step" id="step2">
+      <h2 class="text-xl font-bold mb-4">What is your employment status?</h2>
+      <div class="grid gap-3">
+        <button class="option p-4 border rounded-lg hover:bg-blue-50" data-step="employment" data-value="Full Time">Full Time</button>
+        <button class="option p-4 border rounded-lg hover:bg-blue-50" data-step="employment" data-value="Part Time">Part Time</button>
+        <button class="option p-4 border rounded-lg hover:bg-blue-50" data-step="employment" data-value="Self-Employed">Self-Employed</button>
+        <button class="option p-4 border rounded-lg hover:bg-blue-50" data-step="employment" data-value="Retired">Retired</button>
+        <button class="option p-4 border rounded-lg hover:bg-blue-50" data-step="employment" data-value="Other">Other</button>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step" id="step3">
+      <h2 class="text-xl font-bold mb-4">Enter your US phone number</h2>
+      <form id="surveyForm" action="success.html" method="get" class="space-y-4">
+        <input id="phoneInput" type="tel" name="phone" pattern="\d{10}" placeholder="1234567890"
+          class="w-full p-3 border rounded-lg" required>
+        <button type="submit" class="w-full py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+          Finish
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const steps = document.querySelectorAll('.step');
+    const options = document.querySelectorAll('.option');
+    const progress = document.getElementById('progress');
+    const phoneInput = document.getElementById('phoneInput');
+    let currentStep = 0;
+
+    // Show the required step
+    function showStep(n) {
+      steps.forEach((s, i) => s.classList.toggle('active', i === n));
+      progress.style.width = ((n+1) / steps.length * 100) + '%';
+      localStorage.setItem('currentStep', n);
+    }
+
+    // Processing clicks on options
+    options.forEach(opt => {
+      opt.addEventListener('click', () => {
+        const stepKey = opt.dataset.step;
+        const value = opt.dataset.value;
+        localStorage.setItem(stepKey, value);
+
+        currentStep++;
+        if (currentStep < steps.length) {
+          showStep(currentStep);
+        }
+      });
+    });
+
+    // Save the phone number
+    phoneInput.addEventListener('input', () => {
+      localStorage.setItem('phone', phoneInput.value);
+    });
+
+    // State recovery
+    window.addEventListener('load', () => {
+      const savedStep = localStorage.getItem('currentStep');
+      if (savedStep !== null) {
+        currentStep = parseInt(savedStep);
+        showStep(currentStep);
+      }
+
+      // If a phone number was entered
+      const savedPhone = localStorage.getItem('phone');
+      if (savedPhone) {
+        phoneInput.value = savedPhone;
+      }
+    });
+
+    // Cleaning after sending
+    document.getElementById('surveyForm').addEventListener('submit', () => {
+      localStorage.clear();
+    });
+  </script>
+</body>
+</html>
