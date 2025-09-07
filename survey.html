@@ -105,8 +105,30 @@
     document.getElementById('surveyForm').addEventListener('submit', () => {
       localStorage.clear();
     });
-
-    // Ideally, add phone input masking here
   </script>
+
+  <script>
+    // Implementing Input Validation on a Phone Number Field
+    
+    document.getElementById("surveyForm").addEventListener("submit", function(event) {
+    let valid = true;
+    let phoneInput = document.getElementById("phone");
+
+    if (phoneInput.value.trim() === "") {
+        alert("Enter your phone number");
+        valid = false;
+    }
+
+    let phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(phoneInput.value)) {
+        alert("The phone must support exactly 10 digits (example: 5551234567)");
+        valid = false;
+    }
+
+    if (!valid) {
+        event.preventDefault();
+    }
+});
+</script>
 </body>
 </html>
