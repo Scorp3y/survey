@@ -43,87 +43,135 @@
     </div>
 
     <!-- Step 3 -->
-    <div class="step" id="step3">
-      <h2 class="text-lg sm:text-xl font-bold mb-4">Enter your US phone number</h2>
-      <form id="surveyForm" action="success.html" method="get" class="space-y-4">
-        <input id="phoneInput" type="tel" name="phone" pattern="\d{10}" placeholder="1234567890"
-          class="w-full p-3 text-sm sm:text-base border rounded-lg" required>
-        <button type="submit" class="w-full py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-          Finish
-        </button>
-      </form>
-    </div>
+<div class="step" id="step3">
+  <h2 class="text-xl font-bold mb-4">Enter your US phone number</h2>
+  <form id="surveyForm" class="space-y-4">
+    <input id="phoneInput" type="tel" name="phone" pattern="\d{10}"
+           placeholder="1234567890"
+           class="w-full p-3 border rounded-lg" required>
+    <p id="phoneError" class="text-red-500 text-sm mt-2"></p>
+    <button id="submitBtn" type="submit" class="w-full py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+      Finish 
+    </button>
+  </form>
+</div>
+
 
   </div>
 
   <script>
-    const steps = document.querySelectorAll('.step');
-    const options = document.querySelectorAll('.option');
-    const progress = document.getElementById('progress');
-    const phoneInput = document.getElementById('phoneInput');
-    let currentStep = 0;
+    /* ====== helper & local state ====== */
+const steps = document.querySelectorAll('.step');
+const options = document.querySelectorAll('.option');
+const progress = document.getElementById('progress');
+const phoneInput = document.getElementById('phoneInput');
+const phoneError = document.getElementById('phoneError');
+const submitBtn = document.getElementById('submitBtn');
+let currentStep = 0;
 
-    // Show the required step
-    function showStep(n) {
-      steps.forEach((s, i) => s.classList.toggle('active', i === n));
-      progress.style.width = ((n+1) / steps.length * 100) + '%';
-      localStorage.setItem('currentStep', n);
+function showStep(n) {
+  steps.forEach((s, i) => s.classList.toggle('active', i === n));
+  progress.style.width = ((n+1) / steps.length * 100) + '%';
+  localStorage.setItem('currentStep', n);
+}
+
+
+window.addEventListener('load', () => {
+  const savedStep = localStorage.getItem('currentStep');
+  if (savedStep !== null) {
+    currentStep = parseInt(savedStep);
+    showStep(currentStep);
+  }
+  const savedPhone = localStorage.getItem('phone');
+  if (savedPhone) phoneInput.value = savedPhone;
+
+  const income = localStorage.getItem('income');
+  const employment = localStorage.getItem('employment');
+  document.querySelectorAll('.option').forEach(btn => {
+    if ((btn.dataset.step === 'income' && btn.dataset.value === income) ||
+        (btn.dataset.step === 'employment' && btn.dataset.value === employment)) {
+      btn.classList.add('bg-blue-50','ring','ring-blue-300'); // visual selection
+    }
+  });
+});
+
+options.forEach(opt => {
+  opt.addEventListener('click', () => {
+    const stepKey = opt.dataset.step;
+    const value = opt.dataset.value;
+    localStorage.setItem(stepKey, value);
+
+    document.querySelectorAll(`.option[data-step="${stepKey}"]`).forEach(b => {
+      b.classList.remove('bg-blue-50','ring','ring-blue-300');
+    });
+    opt.classList.add('bg-blue-50','ring','ring-blue-300');
+
+    currentStep++;
+    if (currentStep < steps.length) showStep(currentStep);
+  });
+});
+
+
+phoneInput.addEventListener('input', () => {
+  localStorage.setItem('phone', phoneInput.value);
+  phoneError.textContent = '';
+  phoneInput.classList.remove('border-red-500');
+});
+
+document.getElementById('surveyForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  submitBtn.disabled = true;
+  const oldText = submitBtn.textContent;
+  submitBtn.textContent = 'Sending...';
+
+  const phone = phoneInput.value.trim();
+  const phoneRegex = /^\d{10}$/;
+  if (!phoneRegex.test(phone)) {
+    phoneError.textContent = "Phone number must be exactly 10 digits (example: 5551234567).";
+    phoneInput.classList.add('border-red-500');
+    submitBtn.disabled = false;
+    submitBtn.textContent = oldText;
+    return;
+  }
+
+  const income = localStorage.getItem('income');
+  const employment = localStorage.getItem('employment');
+
+  if (!income || !employment) {
+    phoneError.textContent = "Please complete all survey steps before submitting.";
+    submitBtn.disabled = false;
+    submitBtn.textContent = oldText;
+    return;
+  }
+
+  const payload = { income, employment, phone };
+
+  try {
+    const res = await fetch('/api/survey', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const json = await res.json().catch(()=>({error:res.statusText}));
+      throw new Error(json.error || 'Server error');
     }
 
-    // Processing clicks on options
-    options.forEach(opt => {
-      opt.addEventListener('click', () => {
-        const stepKey = opt.dataset.step;
-        const value = opt.dataset.value;
-        localStorage.setItem(stepKey, value);
+    localStorage.removeItem('income');
+    localStorage.removeItem('employment');
+    localStorage.removeItem('phone');
+    localStorage.removeItem('currentStep');
 
-        currentStep++;
-        if (currentStep < steps.length) {
-          showStep(currentStep);
-        }
-      });
-    });
-
-    // Save the phone number
-    phoneInput.addEventListener('input', () => {
-      localStorage.setItem('phone', phoneInput.value);
-    });
-
-    // State recovery
-    window.addEventListener('load', () => {
-      const savedStep = localStorage.getItem('currentStep');
-      if (savedStep !== null) {
-        currentStep = parseInt(savedStep);
-        showStep(currentStep);
-      }
-
-      const savedPhone = localStorage.getItem('phone');
-      if (savedPhone) {
-        phoneInput.value = savedPhone;
-      }
-    });
-
-    // Cleaning after sending
-    document.getElementById('surveyForm').addEventListener('submit', () => {
-      localStorage.clear();
-    });
-
-    // Phone validation
-    document.getElementById("surveyForm").addEventListener("submit", function(event) {
-      let valid = true;
-      let phoneValue = phoneInput.value.trim();
-      let phoneRegex = /^\d{10}$/;
-
-      if (!phoneRegex.test(phoneValue)) {
-        alert("The phone must contain exactly 10 digits (example: 5551234567)");
-        valid = false;
-      }
-
-      if (!valid) {
-        event.preventDefault();
-      }
-    });
-  </script>
+    window.location.href = 'success.html';
+  } catch (err) {
+    phoneError.textContent = 'Submission failed: ' + err.message;
+    submitBtn.disabled = false;
+    submitBtn.textContent = oldText;
+  }
+});
+</script>
 
 </body>
 </html>
