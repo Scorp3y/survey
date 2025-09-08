@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Survey</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -9,48 +10,50 @@
     .step.active { display: block; }
   </style>
 </head>
-<body class="flex items-center justify-center min-h-screen bg-gray-100">
-  <div class="w-full max-w-lg p-8 bg-white shadow-lg rounded-2xl">
+<body class="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+
+  <div class="w-full max-w-lg p-4 sm:p-8 bg-white shadow-lg rounded-2xl">
 
     <!-- Progress bar -->
-    <div class="w-full bg-gray-200 rounded-full h-2 mb-6">
-      <div id="progress" class="bg-blue-500 h-2 rounded-full transition-all duration-500" style="width: 33%;"></div>
+    <div class="w-full bg-gray-200 rounded-full h-2 sm:h-3 mb-6">
+      <div id="progress" class="bg-blue-500 h-2 sm:h-3 rounded-full transition-all duration-500" style="width: 33%;"></div>
     </div>
 
     <!-- Step 1 -->
     <div class="step active" id="step1">
-      <h2 class="text-xl font-bold mb-4">What is your income range?</h2>
-      <div class="grid gap-3">
-        <button class="option p-4 border rounded-lg hover:bg-blue-50" data-step="income" data-value="<20k">< $20,000</button>
-        <button class="option p-4 border rounded-lg hover:bg-blue-50" data-step="income" data-value="20-40">$20,000 - $40,000</button>
-        <button class="option p-4 border rounded-lg hover:bg-blue-50" data-step="income" data-value="40-80">$40,000 - $80,000</button>
-        <button class="option p-4 border rounded-lg hover:bg-blue-50" data-step="income" data-value="80+">> $100,000</button>
+      <h2 class="text-lg sm:text-xl font-bold mb-4">What is your income range?</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <button class="option p-3 sm:p-4 text-sm sm:text-base border rounded-lg hover:bg-blue-50" data-step="income" data-value="<20k">< $20,000</button>
+        <button class="option p-3 sm:p-4 text-sm sm:text-base border rounded-lg hover:bg-blue-50" data-step="income" data-value="20-40">$20,000 - $40,000</button>
+        <button class="option p-3 sm:p-4 text-sm sm:text-base border rounded-lg hover:bg-blue-50" data-step="income" data-value="40-80">$40,000 - $80,000</button>
+        <button class="option p-3 sm:p-4 text-sm sm:text-base border rounded-lg hover:bg-blue-50" data-step="income" data-value="80+">> $100,000</button>
       </div>
     </div>
 
     <!-- Step 2 -->
     <div class="step" id="step2">
-      <h2 class="text-xl font-bold mb-4">What is your employment status?</h2>
-      <div class="grid gap-3">
-        <button class="option p-4 border rounded-lg hover:bg-blue-50" data-step="employment" data-value="Full Time">Full Time</button>
-        <button class="option p-4 border rounded-lg hover:bg-blue-50" data-step="employment" data-value="Part Time">Part Time</button>
-        <button class="option p-4 border rounded-lg hover:bg-blue-50" data-step="employment" data-value="Self-Employed">Self-Employed</button>
-        <button class="option p-4 border rounded-lg hover:bg-blue-50" data-step="employment" data-value="Retired">Retired</button>
-        <button class="option p-4 border rounded-lg hover:bg-blue-50" data-step="employment" data-value="Other">Other</button>
+      <h2 class="text-lg sm:text-xl font-bold mb-4">What is your employment status?</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <button class="option p-3 sm:p-4 text-sm sm:text-base border rounded-lg hover:bg-blue-50" data-step="employment" data-value="Full Time">Full Time</button>
+        <button class="option p-3 sm:p-4 text-sm sm:text-base border rounded-lg hover:bg-blue-50" data-step="employment" data-value="Part Time">Part Time</button>
+        <button class="option p-3 sm:p-4 text-sm sm:text-base border rounded-lg hover:bg-blue-50" data-step="employment" data-value="Self-Employed">Self-Employed</button>
+        <button class="option p-3 sm:p-4 text-sm sm:text-base border rounded-lg hover:bg-blue-50" data-step="employment" data-value="Retired">Retired</button>
+        <button class="option p-3 sm:p-4 text-sm sm:text-base border rounded-lg hover:bg-blue-50" data-step="employment" data-value="Other">Other</button>
       </div>
     </div>
 
     <!-- Step 3 -->
     <div class="step" id="step3">
-      <h2 class="text-xl font-bold mb-4">Enter your US phone number</h2>
+      <h2 class="text-lg sm:text-xl font-bold mb-4">Enter your US phone number</h2>
       <form id="surveyForm" action="success.html" method="get" class="space-y-4">
         <input id="phoneInput" type="tel" name="phone" pattern="\d{10}" placeholder="1234567890"
-          class="w-full p-3 border rounded-lg" required>
+          class="w-full p-3 text-sm sm:text-base border rounded-lg" required>
         <button type="submit" class="w-full py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
           Finish
         </button>
       </form>
     </div>
+
   </div>
 
   <script>
@@ -94,7 +97,6 @@
         showStep(currentStep);
       }
 
-      // If a phone number was entered
       const savedPhone = localStorage.getItem('phone');
       if (savedPhone) {
         phoneInput.value = savedPhone;
@@ -105,30 +107,23 @@
     document.getElementById('surveyForm').addEventListener('submit', () => {
       localStorage.clear();
     });
+
+    // Phone validation
+    document.getElementById("surveyForm").addEventListener("submit", function(event) {
+      let valid = true;
+      let phoneValue = phoneInput.value.trim();
+      let phoneRegex = /^\d{10}$/;
+
+      if (!phoneRegex.test(phoneValue)) {
+        alert("The phone must contain exactly 10 digits (example: 5551234567)");
+        valid = false;
+      }
+
+      if (!valid) {
+        event.preventDefault();
+      }
+    });
   </script>
 
-  <script>
-    // Implementing Input Validation on a Phone Number Field
-    
-    document.getElementById("surveyForm").addEventListener("submit", function(event) {
-    let valid = true;
-    let phoneInput = document.getElementById("phone");
-
-    if (phoneInput.value.trim() === "") {
-        alert("Enter your phone number");
-        valid = false;
-    }
-
-    let phoneRegex = /^\d{10}$/;
-    if (!phoneRegex.test(phoneInput.value)) {
-        alert("The phone must support exactly 10 digits (example: 5551234567)");
-        valid = false;
-    }
-
-    if (!valid) {
-        event.preventDefault();
-    }
-});
-</script>
 </body>
 </html>
